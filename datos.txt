@@ -1,0 +1,5 @@
+#MongoDB
+lalitofu
+nvTxsbXJMDu8BIhf
+mongodb+srv://<db_username>:<db_password>@cluster0.w4z61hh.mongodb.net/?appName=Cluster0
+mongodb+srv://lalitofu:nvTxsbXJMDu8BIhf@cluster0.w4z61hh.mongodb.net/twitchDBAPI
