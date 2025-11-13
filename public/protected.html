@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ruta Protegida</title>
+</head>
+<body>
+  <h1>Ruta protegida</h1>
+  <div id="app">
+    <h2>Email: </h2>
+  </div>
+    <button id="btnLogOut">Logout</button>
+
+  <script>
+
+    const btnLogOut = document.getElementById('btnLogOut')
+    btnLogOut.addEventListener('click',async() => {
+        const res = await fetch('/api/v1/auth/logout', {
+            method: 'GET',
+            credentials: 'include'
+            })
+    console.log(res)        
+        })
+    
+
+
+    document.addEventListener('DOMContentLoaded', async e => {
+    try {
+        const resToken = await fetch('/api/v1/auth/refresh', {
+            method: "GET",
+            credentials: 'include',
+        })
+        const {token}=await resToken.json()
+      //const token ="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI2OTBkZGE1MWVjOGQwYTU5NzEzOTc5YWQiLCJpYXQiOjE3NjMwMzYyMDYsImV4cCI6MTc2MzAzNzEwNn0.xVAAljYwpE3DIhGf4IwWnSoD06XZnrwkkuvawt4tYSQ"
+      const res = await fetch('/api/v1/auth/protected', {
+        method: 'GET',
+        headers: {
+          "Authorization" : "Bearer " + token, 
+          "Content-Type" : "application/json"},
+        credentials :'include',
+        });
+        
+
+        console.log("Estado:", res.ok, res.status);
+        const data = await res.json();
+
+        if(res.ok){
+
+        const app = document.getElementById('app').textContent = `Email: ${data.email}`
+
+        }
+
+        console.log("Respuesta:", data);
+
+
+      } catch (error) {
+        console.error("Error:", error);
+      }
+    });
+  </script>
+</body>
+</html>
