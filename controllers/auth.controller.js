@@ -1,7 +1,8 @@
 import { validationResult } from "express-validator"
+import jwt from "jsonwebtoken"
 import { User } from "../models/user.js"
 import { generateToken, generateRefreshToken } from "../utils/generateToken.js"
-import jwt from "jsonwebtoken"
+
 
 export const register =  async(req,res)=> {
     const {email,password} = req.body
@@ -14,7 +15,9 @@ export const register =  async(req,res)=> {
         await user.save()
 
         //JWT = Jason Web Token
-        return res.json({ok:true})
+        const {token,expiresIn} = generateToken(user.id)
+        generateRefreshToken(user.id, res)
+        return res.status(201).json({token,expiresIn})
     
     } catch (error) {
         console.log(error.code)
@@ -60,28 +63,16 @@ return res.status
 }
 
 export const refreshToken = (req,res) => {
-    
     try {
-      const refreshTokenCookie = req.cookies.refreshToken
-        if(!refreshTokenCookie) {
-          throw new Error("No existe el token")
-        }
-        const {uid} = jwt.verify(refreshTokenCookie, process.env.JWT_REFRESH)
-        const {token,expiresIn} = generateToken(uid)
-
+     const { uid } = req;    
+     const {token,expiresIn} = generateToken(uid)
         return res.json({token,expiresIn})
+
     } catch (error) {
         console.log(error)
-         const TokenVerificationErrors = {
-            ["invalid signature"]: "la firma del JWT no es valida",
-            ["jwt wxpired"]: "JWT expirado",
-            ["invalid token"]: "Token no valido",
-            ["No Bearer"]: "Utilza formato Bearer",
-            ["jwt malformed"]: "JWT formato invalido"
-}
-return res.status(401).send({error: TokenVerificationErrors[error.message]})
+        return res.status(500).json({error:"error de servidor"})
+        }    
     }
-}
 
 export const logOut = (req,res) => {
     res.clearCookie('token', {

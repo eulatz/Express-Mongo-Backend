@@ -1,45 +1,20 @@
-import {Router} from 'express'
-import { infoUser, login, register,refreshToken, logOut } from '../controllers/auth.controller.js'
+import { Router } from 'express'
 import { body } from 'express-validator'
-import { validationResultExpress } from '../middlewares/validatorResultExpress.js'
+
+import { infoUser, login, register,refreshToken, logOut } from '../controllers/auth.controller.js'
+
+import { validationResultExpress,bodyRegisterValidator, bodyLoginValidator } from '../middlewares/validatorManager.js'
+import { requiereRefreshToken } from '../middlewares/requiereRefreshToken.js'
 import { requiereToken } from '../middlewares/requiereToken.js'
+
 import { generateRefreshToken } from '../utils/generateToken.js'
 
 const router = Router()
 
-router.post('/login' , [
-body('email')
-    .trim()
-    .isEmail().withMessage("Formato Incorrecto")
-    .normalizeEmail(),
-
-    body("password")
-    .trim()
-    .notEmpty().withMessage("La contraseña no puede estar vacia")
-    .isLength({min:6}).withMessage("La contraseña debe tener al menos 6 caracteres")    
-],validationResultExpress,login)
-
-
-router.post('/register', [
-    body('email')
-    .trim()
-    .isEmail().withMessage("Formato Incorrecto")
-    .normalizeEmail(),
-
-    body("password")
-    .trim()
-    .notEmpty().withMessage("La contraseña no puede estar vacia")
-    .isLength({min:6}).withMessage("La contraseña debe tener al menos 6 caracteres")
-    .custom((value,{req}) => {
-        if(value !== req.body.repassword){
-            throw new Error("Las contraseñas no coinciden")
-        }
-        return value;
-    }),
-],validationResultExpress,register)
-
+router.post('/login' , bodyLoginValidator ,login)
+router.post('/register', bodyRegisterValidator ,register)
 router.get('/protected',requiereToken, infoUser)
-router.get("/refresh", refreshToken)
+router.get("/refresh",requiereRefreshToken, refreshToken)
 router.get('/logout',logOut)
 
 export default router;
